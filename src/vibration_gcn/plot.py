@@ -16,17 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with vibration-gcn.  If not, see <https://www.gnu.org/licenses/>.
 
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from matplotlib.pyplot import subplots
 from numpy.typing import NDArray
-from matplotlib.pyplot import show
-
-from . import plot
-from .input import read_file_to_array
 
 
-def main(normal_file_path: str, abnormal_file_path: str) -> None:
-    normal_raw: NDArray = read_file_to_array(normal_file_path)
-    abnormal_raw: NDArray = read_file_to_array(abnormal_file_path)
+def linechart(y: NDArray, title: str) -> None:
+    fig: Figure
+    ax: Axes
+    fig, ax = subplots()
 
-    # plot.linechart(normal_raw, "Raw signal, normal")
-    # plot.linechart(abnormal_raw, "Raw signal, abnormal")
-
+    ax.set_title(title)
+    ax.plot(y)
