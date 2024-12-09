@@ -50,16 +50,17 @@ def main(normal_file_path: str, abnormal_file_path: str) -> None:
 
     normal_splited: NDArray = group_signals(normal_raw)
     abnormal_splited: NDArray = group_signals(abnormal_raw)
-
-    features: NDArray = apply_along_axis(
+    dirty_features: NDArray = apply_along_axis(
         func1d=calc_feature,
         axis=1,
         arr=concatenate((normal_splited, abnormal_splited), dtype=double),
     )
 
-    # Find all non-outliers.
-    clean_indexes: list[int] = find_clean_indexes(features, contamination=0.02)
-    features = features[clean_indexes]
+    # Find all non-outliers indexes.
+    clean_indexes: list[int] = find_clean_indexes(dirty_features, contamination=0.02)
+
+    # Keep only non-outliers in the data.
+    features: NDArray = dirty_features[clean_indexes]
     ground_truth_label: Tensor = tensor(
         [0] * normal_splited.shape[0] + [1] * abnormal_splited.shape[0],
         dtype=torch.uint8,
@@ -72,19 +73,18 @@ def main(normal_file_path: str, abnormal_file_path: str) -> None:
     )[clean_indexes]
     test_mask: Tensor = logical_not(train_mask)
 
-    plot.heatmap(
-        features,
-        title="Feature matrix",
-        x_labels=[
-            "Standard deviation",
-            "Peak",
-            "Skewness",
-            "Kurtosis",
-            "Root mean square",
-            "Crest factor",
-            "Square root amplitude",
-            "Shape factor",
-            "Impulse factor",
-        ],
-    )
-    show()
+    # plot.heatmap(
+    #     features,
+    #     title="Feature matrix",
+    #     x_labels=[
+    #         "Standard deviation",
+    #         "Peak",
+    #         "Skewness",
+    #         "Kurtosis",
+    #         "Root mean square",
+    #         "Crest factor",
+    #         "Square root amplitude",
+    #         "Shape factor",
+    #         "Impulse factor",
+    #     ],
+    # )
