@@ -16,20 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with vibration-gcn.  If not, see <https://www.gnu.org/licenses/>.
 
+from math import ceil
+from numpy import pad
 from numpy.typing import NDArray
-from matplotlib.pyplot import show
-
-from . import plot
-from .input import read_file_to_array
-from .preprocess import group_signals
 
 
-def main(normal_file_path: str, abnormal_file_path: str) -> None:
-    normal_raw: NDArray = read_file_to_array(normal_file_path)
-    abnormal_raw: NDArray = read_file_to_array(abnormal_file_path)
-
-    # plot.linechart(normal_raw, "Raw signal, normal")
-    # plot.linechart(abnormal_raw, "Raw signal, abnormal")
-
-    normal_splited: NDArray = group_signals(normal_raw)
-    abnormal_splited: NDArray = group_signals(abnormal_raw)
+def group_signals(raw: NDArray, n: int = 500) -> NDArray:
+    num_rows: int = ceil(raw.shape[0] / n)
+    return pad(raw, (0, num_rows * n - raw.shape[0]), mode="edge").reshape(
+        (num_rows, n)
+    )
