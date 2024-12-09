@@ -16,12 +16,28 @@
 # You should have received a copy of the GNU General Public License
 # along with vibration-gcn.  If not, see <https://www.gnu.org/licenses/>.
 
+from math import ceil
+from random import shuffle
+
 from numpy.typing import NDArray
 from matplotlib.pyplot import show
+from torch import Tensor, cat, logical_not, tensor
+import torch
 
 from . import plot
 from .input import read_file_to_array
 from .preprocess import group_signals
+
+
+def make_mask(n: int, percentage: float, do_shuffle: bool = True) -> Tensor:
+    assert percentage <= 1.0
+
+    true_amount: int = ceil(n * percentage)
+    temp: list[bool] = [True] * true_amount + [False] * (n - true_amount)
+    if do_shuffle:
+        shuffle(temp)
+
+    return tensor(temp, dtype=torch.bool)
 
 
 def main(normal_file_path: str, abnormal_file_path: str) -> None:
@@ -33,3 +49,15 @@ def main(normal_file_path: str, abnormal_file_path: str) -> None:
 
     normal_splited: NDArray = group_signals(normal_raw)
     abnormal_splited: NDArray = group_signals(abnormal_raw)
+
+    ground_truth_label: Tensor = tensor(
+        [0] * normal_splited.shape[0] + [1] * abnormal_splited.shape[0],
+        dtype=torch.uint8,
+    )
+    train_mask: Tensor = cat(
+        (
+            make_mask(n=normal_splited.shape[0], percentage=0.75),
+            make_mask(n=abnormal_splited.shape[0], percentage=0.75),
+        )
+    )
+    test_mask: Tensor = logical_not(train_mask)
