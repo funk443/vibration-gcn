@@ -19,6 +19,7 @@
 from math import ceil
 from random import shuffle
 
+from numpy import apply_along_axis, concatenate, double
 from numpy.typing import NDArray
 from matplotlib.pyplot import show
 from torch import Tensor, cat, logical_not, tensor
@@ -26,7 +27,7 @@ import torch
 
 from . import plot
 from .input import read_file_to_array
-from .preprocess import group_signals
+from .preprocess import find_clean_indexes, group_signals, calc_feature
 
 
 def make_mask(n: int, percentage: float, do_shuffle: bool = True) -> Tensor:
@@ -50,14 +51,23 @@ def main(normal_file_path: str, abnormal_file_path: str) -> None:
     normal_splited: NDArray = group_signals(normal_raw)
     abnormal_splited: NDArray = group_signals(abnormal_raw)
 
+    features: NDArray = apply_along_axis(
+        func1d=calc_feature,
+        axis=1,
+        arr=concatenate((normal_splited, abnormal_splited), dtype=double),
+    )
+
+    # Find all non-outliers.
+    clean_indexes: list[int] = find_clean_indexes(features, contamination=0.02)
+    features = features[clean_indexes]
     ground_truth_label: Tensor = tensor(
         [0] * normal_splited.shape[0] + [1] * abnormal_splited.shape[0],
         dtype=torch.uint8,
-    )
+    )[clean_indexes]
     train_mask: Tensor = cat(
         (
             make_mask(n=normal_splited.shape[0], percentage=0.75),
             make_mask(n=abnormal_splited.shape[0], percentage=0.75),
         )
-    )
+    )[clean_indexes]
     test_mask: Tensor = logical_not(train_mask)

@@ -17,8 +17,10 @@
 # along with vibration-gcn.  If not, see <https://www.gnu.org/licenses/>.
 
 from math import ceil
-from numpy import pad
+from numpy import absolute, double, fromiter, pad, std, amax, sqrt, ndenumerate
 from numpy.typing import NDArray
+from scipy.stats import skew, kurtosis
+from sklearn.ensemble import IsolationForest
 
 
 def group_signals(raw: NDArray, n: int = 500) -> NDArray:
@@ -26,3 +28,26 @@ def group_signals(raw: NDArray, n: int = 500) -> NDArray:
     return pad(raw, (0, num_rows * n - raw.shape[0]), mode="edge").reshape(
         (num_rows, n)
     )
+
+
+def calc_feature(raw: NDArray) -> NDArray:
+    n: int = raw.shape[0]
+
+    features: dict[str, double] = {}
+    features["standard deviation"] = std(raw)
+    features["peak"] = amax(absolute(raw))
+    features["skewness"] = skew(raw)
+    features["kurtosis"] = kurtosis(raw)
+    features["root mean square"] = sqrt((raw**2).sum() / n)
+    features["crest factor"] = features["peak"] / features["root mean square"]
+    features["square root amplitude"] = (sqrt(absolute(raw)).sum() / n) ** 2
+    features["shape factor"] = features["root mean square"] * n / absolute(raw).sum()
+    features["impulse factor"] = features["peak"] * n / absolute(raw).sum()
+
+    return fromiter(features.values(), dtype=double)
+
+
+def find_clean_indexes(datas: NDArray, **kwargs) -> list[int]:
+    forest: IsolationForest = IsolationForest(**kwargs)
+    outliers: NDArray = forest.fit_predict(datas)
+    return [i[0] for i, x in ndenumerate(outliers) if x != -1]
