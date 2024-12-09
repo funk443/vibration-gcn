@@ -71,3 +71,20 @@ def main(normal_file_path: str, abnormal_file_path: str) -> None:
         )
     )[clean_indexes]
     test_mask: Tensor = logical_not(train_mask)
+
+    plot.heatmap(
+        features,
+        title="Feature matrix",
+        x_labels=[
+            "Standard deviation",
+            "Peak",
+            "Skewness",
+            "Kurtosis",
+            "Root mean square",
+            "Crest factor",
+            "Square root amplitude",
+            "Shape factor",
+            "Impulse factor",
+        ],
+    )
+    show()

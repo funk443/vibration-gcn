@@ -18,7 +18,9 @@
 
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from matplotlib.image import AxesImage
 from matplotlib.pyplot import subplots
+from numpy import arange
 from numpy.typing import NDArray
 
 
@@ -27,5 +29,35 @@ def linechart(y: NDArray, title: str) -> None:
     ax: Axes
     fig, ax = subplots()
 
-    ax.set_title(title)
     ax.plot(y)
+    ax.set_title(title)
+    fig.tight_layout()
+
+
+def heatmap(
+    data: NDArray,
+    title: str,
+    x_labels: list[str] | None = None,
+    y_labels: list[str] | None = None,
+) -> None:
+    fig: Figure
+    ax: Axes
+    fig, ax = subplots()
+
+    im: AxesImage = ax.imshow(
+        data,
+        cmap="Blues",
+        interpolation="none",
+        aspect="auto",
+    )
+    fig.colorbar(im)
+
+    if x_labels is not None:
+        ax.set_xticks(arange(len(x_labels)), labels=x_labels)
+        for t in ax.get_xticklabels():
+            t.set(rotation=45, horizontalalignment="right", rotation_mode="anchor")
+    if y_labels is not None:
+        ax.set_yticks(arange(len(y_labels)), labels=y_labels)
+
+    ax.set_title(title)
+    fig.tight_layout()
