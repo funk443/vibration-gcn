@@ -96,6 +96,10 @@ def main(normal_file_path: str, abnormal_file_path: str) -> None:
     # )
 
     adj_matrix_knn: NDArray = adj_matrix.knn(features)
+
+    # plot.heatmap(adj_matrix_knn, "Adjacency matrix, KNN")
+    # show()
+
     data_knn: Data = Data(
         x=from_numpy(features),
         edge_index=from_numpy(adj_matrix_knn).nonzero().t().contiguous(),
@@ -106,7 +110,5 @@ def main(normal_file_path: str, abnormal_file_path: str) -> None:
     model_knn: Module = GCN(data_knn)
     model_knn.go_training()
     result_knn: dict = model_knn.go_testing()
-    print(result_knn)
 
-    # plot.heatmap(adj_matrix_knn, "Adjacency matrix, KNN")
-    # show()
+    # plot.confusion_matrix(result_knn, "Confusion Matrix, KNN")

@@ -20,7 +20,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.image import AxesImage
 from matplotlib.pyplot import subplots
-from numpy import arange
+from numpy import arange, array, nditer
 from numpy.typing import NDArray
 
 
@@ -46,8 +46,8 @@ def heatmap(
 
     im: AxesImage = ax.imshow(
         data,
-        cmap="Blues",
-        interpolation="none",
+        cmap="hot",
+        interpolation="nearest",
         aspect="auto",
     )
     fig.colorbar(im)
@@ -60,4 +60,48 @@ def heatmap(
         ax.set_yticks(arange(len(y_labels)), labels=y_labels)
 
     ax.set_title(title)
+    fig.tight_layout()
+
+
+def confusion_matrix(confusion_data: dict, title: str) -> None:
+    fig: Figure
+    ax: Axes
+    fig, ax = subplots()
+
+    matrix: NDArray = array(
+        [
+            [confusion_data["tp"], confusion_data["fn"]],
+            [confusion_data["fp"], confusion_data["tn"]],
+        ]
+    )
+
+    im: AxesImage = ax.imshow(matrix, interpolation="nearest", cmap="hot")
+    fig.colorbar(im)
+    ax.set(
+        xticks=arange(matrix.shape[1]),
+        yticks=arange(matrix.shape[0]),
+        xticklabels=["Positive", "Negative"],
+        yticklabels=["Positive", "Negative"],
+        title=title,
+        xlabel="Predicted",
+        ylabel="Actual",
+    )
+
+    for t in ax.get_xticklabels():
+        t.set(rotation=45, horizontalalignment="right", rotation_mode="anchor")
+    with nditer(matrix, flags=["multi_index"]) as it:
+        for x in it:
+            i: int
+            j: int
+            i, j = it.multi_index
+            ax.text(
+                j,
+                i,
+                format(x, "d"),
+                ha="center",
+                va="center",
+                color="white",
+                backgroundcolor="black",
+            )
+
     fig.tight_layout()
