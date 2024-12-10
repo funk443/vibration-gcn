@@ -32,7 +32,7 @@ class GCN(Module):
         self.data: Data = data
         self.activation: Module = Mish()
         self.final_activation: Module = LogSoftmax(dim=1)
-        self.dropout: Module = Dropout(p=0.25)
+        self.dropout: Module = Dropout(p=0.1)
 
         self.layers: ModuleList = ModuleList(
             (
@@ -82,9 +82,26 @@ class GCN(Module):
         y_true: Tensor = data.y[test_mask]
         y_pred: Tensor = predictions[test_mask]
 
-        return {
+        confusion_data: dict = {
             "tp": ((y_pred == 1) & (y_true == 1)).sum().item(),
             "tn": ((y_pred != 1) & (y_true != 1)).sum().item(),
             "fp": ((y_pred == 1) & (y_true != 1)).sum().item(),
             "fn": ((y_pred != 1) & (y_true == 1)).sum().item(),
         }
+        confusion_data["accuracy"] = (confusion_data["tp"] + confusion_data["tn"]) / (
+            confusion_data["tp"]
+            + confusion_data["tn"]
+            + confusion_data["fp"]
+            + confusion_data["fn"]
+        )
+        confusion_data["precision"] = confusion_data["tp"] / (
+            confusion_data["tp"] + confusion_data["fp"]
+        )
+        confusion_data["recall"] = confusion_data["tp"] / (
+            confusion_data["tp"] + confusion_data["fn"]
+        )
+        confusion_data["f1-score"] = (
+            2 * confusion_data["precision"] * confusion_data["recall"]
+        ) / (confusion_data["precision"] + confusion_data["recall"])
+
+        return confusion_data
