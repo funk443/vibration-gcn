@@ -22,13 +22,16 @@ from random import shuffle
 from numpy import apply_along_axis, concatenate, double
 from numpy.typing import NDArray
 from matplotlib.pyplot import show
-from torch import Tensor, cat, logical_not, tensor
+from torch import Tensor, cat, logical_not, set_default_dtype, tensor, from_numpy
 import torch
+from torch_geometric.data import Data
+from torch.nn import Module
 
 from . import plot
 from . import adj_matrix
 from .input import read_file_to_array
 from .preprocess import find_clean_indexes, group_signals, calc_feature
+from .model import GCN
 
 
 def make_mask(n: int, percentage: float, do_shuffle: bool = True) -> Tensor:
@@ -43,6 +46,8 @@ def make_mask(n: int, percentage: float, do_shuffle: bool = True) -> Tensor:
 
 
 def main(normal_file_path: str, abnormal_file_path: str) -> None:
+    set_default_dtype(torch.double)
+
     normal_raw: NDArray = read_file_to_array(normal_file_path)
     abnormal_raw: NDArray = read_file_to_array(abnormal_file_path)
 
@@ -91,6 +96,17 @@ def main(normal_file_path: str, abnormal_file_path: str) -> None:
     # )
 
     adj_matrix_knn: NDArray = adj_matrix.knn(features)
+    data_knn: Data = Data(
+        x=from_numpy(features),
+        edge_index=from_numpy(adj_matrix_knn).nonzero().t().contiguous(),
+        y=ground_truth_label,
+        train_mask=train_mask,
+        test_mask=test_mask,
+    )
+    model_knn: Module = GCN(data_knn)
+    model_knn.go_training()
+    result_knn: dict = model_knn.go_testing()
+    print(result_knn)
 
     # plot.heatmap(adj_matrix_knn, "Adjacency matrix, KNN")
     # show()
