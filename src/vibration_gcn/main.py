@@ -26,6 +26,7 @@ from torch import Tensor, cat, logical_not, tensor
 import torch
 
 from . import plot
+from . import adj_matrix
 from .input import read_file_to_array
 from .preprocess import find_clean_indexes, group_signals, calc_feature
 
@@ -88,3 +89,8 @@ def main(normal_file_path: str, abnormal_file_path: str) -> None:
     #         "Impulse factor",
     #     ],
     # )
+
+    adj_matrix_knn: NDArray = adj_matrix.knn(features)
+
+    # plot.heatmap(adj_matrix_knn, "Adjacency matrix, KNN")
+    # show()
