@@ -72,7 +72,7 @@ class GCN(Module):
             loss.backward()
             optimizer.step()
 
-    def go_testing(self, data: Data | None = None) -> dict:
+    def go_testing(self, data: Data | None = None) -> dict[str, float]:
         self.eval()
         if data is None:
             data = self.data
@@ -82,7 +82,7 @@ class GCN(Module):
         y_true: Tensor = data.y[test_mask]
         y_pred: Tensor = predictions[test_mask]
 
-        confusion_data: dict = {
+        confusion_data: dict[str, float] = {
             "tp": ((y_pred == 1) & (y_true == 1)).sum().item(),
             "tn": ((y_pred != 1) & (y_true != 1)).sum().item(),
             "fp": ((y_pred == 1) & (y_true != 1)).sum().item(),

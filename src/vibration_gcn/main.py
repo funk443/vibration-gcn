@@ -109,6 +109,6 @@ def main(normal_file_path: str, abnormal_file_path: str) -> None:
     )
     model_knn: Module = GCN(data_knn)
     model_knn.go_training()
-    result_knn: dict = model_knn.go_testing()
+    result_knn: dict[str, float] = model_knn.go_testing()
 
     # plot.confusion_matrix(result_knn, "Confusion Matrix, KNN")

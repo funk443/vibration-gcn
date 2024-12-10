@@ -63,7 +63,7 @@ def heatmap(
     fig.tight_layout()
 
 
-def confusion_matrix(confusion_data: dict, title: str) -> None:
+def confusion_matrix(confusion_data: dict[str, float], title: str) -> None:
     fig: Figure
     ax: Axes
     fig, ax = subplots()
