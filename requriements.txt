@@ -27,6 +27,7 @@ propcache==0.2.1
 psutil==6.1.0
 pyparsing==3.2.0
 python-dateutil==2.9.0.post0
+-e git+https://github.com/lessw2020/Ranger-Deep-Learning-Optimizer@c82a30460684c7301086d84185a1927b1c256afa#egg=ranger
 requests==2.32.3
 scikit-learn==1.5.2
 scipy==1.14.1
