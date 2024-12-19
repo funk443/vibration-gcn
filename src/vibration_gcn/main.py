@@ -56,16 +56,18 @@ def main(normal_file_path: str, abnormal_file_path: str) -> None:
 
     normal_splited: NDArray = group_signals(normal_raw)
     abnormal_splited: NDArray = group_signals(abnormal_raw)
+    dirty_signals: NDArray = concatenate(
+        (normal_splited, abnormal_splited), dtype=double
+    )
     dirty_features: NDArray = apply_along_axis(
-        func1d=calc_feature,
-        axis=1,
-        arr=concatenate((normal_splited, abnormal_splited), dtype=double),
+        func1d=calc_feature, axis=1, arr=dirty_signals
     )
 
     # Find all non-outliers indexes.
     clean_indexes: list[int] = find_clean_indexes(dirty_features, contamination=0.02)
 
     # Keep only non-outliers in the data.
+    signals: NDArray = dirty_signals[clean_indexes]
     features: NDArray = dirty_features[clean_indexes]
     ground_truth_label: Tensor = tensor(
         [0] * normal_splited.shape[0] + [1] * abnormal_splited.shape[0],
